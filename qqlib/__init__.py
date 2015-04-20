@@ -1,12 +1,12 @@
 #!python
 # coding=utf-8
-import os,hashlib,re,tempfile,fetcher,rsa,binascii,base64
+import os,hashlib,re,tempfile,rsa,binascii,base64,requests
 from . import tea
 __all__ = ['QQ', 'LogInError']
 
 class LogInError(Exception): pass
 
-class QQ(fetcher.Fetcher):
+class QQ:
 	appid=501004106
 	action='0-21-1083992'
 	proxyurl='http://w.qq.com/proxy.html'
@@ -17,6 +17,17 @@ class QQ(fetcher.Fetcher):
 		super().__init__()
 		self.user=user
 		self.pwd=pwd
+		self.cookies=None
+	def fetch(self, url, data=None, **kw):
+		if data is None:
+			func = requests.get
+		else:
+			kw['data'] = data
+			func = requests.post
+		kw['cookies'] = self.cookies
+		r = func(url, **kw)
+		self.cookies = r.cookies
+		return r
 	def login(self):
 		g=self.fetch(self.checkurl, params={
 			'pt_tea': 1,
@@ -25,7 +36,7 @@ class QQ(fetcher.Fetcher):
 			'js_ver': 10120,
 			'js_type': 0,
 			'u1': self.proxyurl,
-		}).text()
+		}).text
 		v=re.findall('\'(.*?)\'',g)
 		vcode=v[1]
 		uin=v[2]
@@ -54,8 +65,8 @@ class QQ(fetcher.Fetcher):
 			'js_ver':10120,
 			'pt_randsalt':0,
 			'pt_vcode_v1':0,
-			'pt_verifysession_v1':self.getCookie('ptvfsession'),
-		}).text()
+			'pt_verifysession_v1':self.cookies['ptvfsession'],
+		}).text
 		r=re.findall('\'(.*?)\'',g)
 		if r[0]!='0': raise LogInError(r[4])
 		self.nick=r[5]
@@ -96,7 +107,7 @@ class QQ(fetcher.Fetcher):
 				params={'r':0,'appid':self.appid,
 					'uin':self.user,'vc_type':vcode})
 		tmp=tempfile.mkstemp(suffix='.jpg')
-		os.write(tmp[0],r.raw())
+		os.write(tmp[0],r.raw)
 		os.close(tmp[0])
 		os.startfile(tmp[1])
 		vcode=input('Verify code: ')
