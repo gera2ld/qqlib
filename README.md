@@ -2,11 +2,12 @@ QQLib for Python
 ===
 
 基于webqq的Python版QQ登录库。
+兼容Python2.x和Python3.x。
 
 安装
 ---
 ``` sh
-$ python3 setup.py install
+$ python setup.py install
 ```
 或直接复制`qqlib`到合适的位置。
 

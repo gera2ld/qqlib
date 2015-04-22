@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # coding=utf-8
 """
 The MIT License
@@ -77,7 +77,7 @@ def encrypt(v, k):
 	#filln = (8 - (vl + 2)) % 8
 	filln = (6 - vl) % 8
 	v_arr = [
-		bytes([filln | 0xf8]),
+		bytes(bytearray([filln | 0xf8])),
 		b'\xad' * (filln + 2),	# random char * (filln + 2)
 		v,
 		b'\0' * 7,
