@@ -6,7 +6,10 @@ QQLib for Python
 
 安装
 ---
+第三方依赖：[rsa](https://pypi.python.org/pypi/rsa/)、[requests](https://pypi.python.org/pypi/requests/)。
+
 ``` sh
+$ pip install rsa requests
 $ python setup.py install
 ```
 或直接复制`qqlib`到合适的位置。
