@@ -28,18 +28,15 @@ class QQ:
 	def __init__(self, user, pwd):
 		self.user = user
 		self.pwd = pwd
-		self.cookies = None
+		self.session = requests.Session()
 
 	def fetch(self, url, data=None, **kw):
 		if data is None:
-			func = requests.get
+			func = self.session.get
 		else:
 			kw['data'] = data
-			func = requests.post
-		kw['cookies'] = self.cookies
-		r = func(url, **kw)
-		self.cookies = r.cookies
-		return r
+			func = self.session.post
+		return func(url, **kw)
 
 	def login(self):
 		g = self.fetch(self.checkurl, params = {
@@ -78,7 +75,7 @@ class QQ:
 			'js_ver': 10120,
 			'pt_randsalt': 0,
 			'pt_vcode_v1': 0,
-			'pt_verifysession_v1': self.cookies['ptvfsession'],
+			'pt_verifysession_v1': self.session.cookies['ptvfsession'],
 		}).text
 		r = re.findall('\'(.*?)\'', g)
 		if r[0] != '0':
