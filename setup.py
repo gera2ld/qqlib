@@ -7,7 +7,7 @@ setup(
 	version='1.0',
 	packages=['qqlib'],
 	author='Gerald',
-	author_email='gera2ld@163.com',
-	description='QQ lib for Python 3+.',
-	url='http://git.oschina.net/gerald/qqlib',
+	author_email='i@gerald.top',
+	description='QQ lib for Python.',
+	url='https://github.com/gera2ld/qqlib',
 )
