@@ -1,4 +1,4 @@
-#!python
+#!/usr/bin/env python
 # coding=utf-8
 
 '''
@@ -32,6 +32,7 @@ class QQ:
     def __init__(self, user, pwd):
         self.user = user
         self.pwd = pwd
+        self.nick = None
         self.session = requests.Session()
         self.xlogin()
 
@@ -145,10 +146,10 @@ class QQ:
         Get the verify code image and ask use for a verification.
         '''
         r = self.fetch(self.urlImage, params = {
-            'r':0,
-            'appid':self.appid,
-            'uin':self.user,
-            'vc_type':vcode,
+            'r': 0,
+            'appid': self.appid,
+            'uin': self.user,
+            'vc_type': vcode,
         })
         tmp = tempfile.mkstemp(suffix = '.jpg')
         os.write(tmp[0], r.content)
@@ -159,4 +160,4 @@ class QQ:
         return vcode
 
     def sayHi(self):
-        print('Hi, %s!' % getattr(self, 'nick') or self.user)
+        print('Hi, %s!' % (self.nick or self.user))
