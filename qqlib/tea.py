@@ -7,27 +7,27 @@ Licensed to MIT
 '''
 
 import struct, ctypes
-from binascii import b2a_hex, a2b_hex
 from random import randint
 
 __all__ = ['encrypt', 'decrypt']
 
-def xor(a, b):
-    a1,a2 = struct.unpack('!LL', a[0:8])
-    b1,b2 = struct.unpack('!LL', b[0:8])
-    r = struct.pack('!LL', a1 ^ b1, a2 ^ b2)
-    return r
+def xor8B(a, b):
+    '''
+    XOR operation between two 8B bytes.
+    '''
+    length = 8
+    arr_a = bytearray(a[:length])
+    arr_b = bytearray(b[:length])
+    for i in range(length):
+        arr_a[i] ^= arr_b[i]
+    return bytes(arr_a) if isinstance(a, bytes) else arr_a
 
 def encipher(v, k):
-    """
+    '''
     TEA coder encrypt 64 bits value, by 128 bits key,
     QQ uses 16 round TEA.
     http://www.ftp.cl.cam.ac.uk/ftp/papers/djw-rmn/djw-rmn-tea.html .
-
-    >>> c = encipher('abcdefgh', 'aaaabbbbccccdddd')
-    >>> b2a_hex(c)
-    'a557272c538d3e96'
-    """
+    '''
     n=16  #qq use 16
     delta = 0x9e3779b9
     k = struct.unpack('!LLLL', k[0:16])
@@ -58,10 +58,6 @@ def encrypt(v, k):
     tr is the result in preceding round.
     to is the data coded in perceding round (v_pre ^ r_pre_pre)
     For the first 8 bytes 'tr' and 'to' is filled by zero.
-
-    >>> en = encrypt('', b2a_hex('b537a06cf3bcb33206237d7149c27bc3'))
-    >>> decrypt(en,  b2a_hex('b537a06cf3bcb33206237d7149c27bc3'))
-    ''
     """
     vl = len(v)
     #filln = (8 - (vl + 2)) % 8
@@ -73,13 +69,11 @@ def encrypt(v, k):
         b'\0' * 7,
     ]
     v = b''.join(v_arr)
-    tr = b'\0'*8
-    to = b'\0'*8
+    tr = to = b'\0' * 8
     r = []
-    o = b'\0' * 8
     for i in range(0, len(v), 8):
-        o = xor(v[i:i+8], tr)
-        tr = xor(encipher(o, k), to)
+        o = xor8B(v[i:i+8], tr)
+        tr = xor8B(encipher(o, k), to)
         to = o
         r.append(tr)
     r = b''.join(r)
@@ -104,6 +98,7 @@ def decrypt(v, k):
     The number of padding bytes in the end is 7 (b'\0' * 7).
     The returned value is r[pos+1:-7].
 
+    >>> from binascii import a2b_hex, b2a_hex
     >>> r = encrypt('', b2a_hex('b537a06cf3bcb33206237d7149c27bc3'))
     >>> decrypt(r, b2a_hex('b537a06cf3bcb33206237d7149c27bc3'))
     ''
@@ -119,30 +114,25 @@ def decrypt(v, k):
 
     """
     l = len(v)
-    #if l%8 !=0 or l<16:
+    #if l % 8 != 0 or l < 16:
     #    return ''
     prePlain = decipher(v, k)
-    pos = ord(prePlain[0]) & 0x07 + 2
+    pos = ord(prePlain[:1]) & 0x07 + 2
     r = prePlain
     preCrypt = v[0:8]
     for i in range(8, l, 8):
-        x = xor(decipher(xor(v[i:i+8], prePlain), k), preCrypt)
-        prePlain = xor(x, preCrypt)
+        x = xor8B(decipher(xor8B(v[i:i+8], prePlain), k), preCrypt)
+        prePlain = xor8B(x, preCrypt)
         preCrypt = v[i:i+8]
         r += x
-    if r[-7:] == '\0'*7:
+    if r[-7:] == b'\0' * 7:
         return r[pos+1:-7]
 
 def decipher(v, k):
-    """
-    TEA decipher, decrypt  64bits value with 128 bits key.
+    '''
+    TEA decipher, decrypt 64bits value with 128 bits key.
     it's the inverse function of TEA encrypt.
-
-    >>> c = encipher('abcdefgh', 'aaaabbbbccccdddd')
-    >>> decipher( c, 'aaaabbbbccccdddd')
-    'abcdefgh'
-    """
-
+    '''
     n = 16
     y, z = map(ctypes.c_uint32, struct.unpack('!LL', v[0:8]))
     a, b, c, d = map(ctypes.c_uint32, struct.unpack('!LLLL', k[0:16]))

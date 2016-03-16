@@ -24,3 +24,10 @@ qq = qqlib.QQ(12345678, 'password')
 qq.login()
 qq.sayHi()
 ```
+
+测试
+---
+``` sh
+$ python test
+$ python3 test
+```
