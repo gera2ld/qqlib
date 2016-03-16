@@ -101,6 +101,7 @@ class QQ:
         if r[0] != '0':
             raise LogInError(r[4])
         self.nick = r[5]
+        self.fetch(r[2])
 
     def fromhex(self, s):
         # Python 3: bytes.fromhex
