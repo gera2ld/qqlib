@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-import sys
-sys.path.append('.')
+from . import tests
 
-import tea
-
-tea.test()
+for item in tests:
+    item.test()

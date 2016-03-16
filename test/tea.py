@@ -2,7 +2,7 @@
 # coding=utf-8
 from binascii import a2b_hex, b2a_hex
 from qqlib import tea
-from base import show_start, show_result
+from .base import show_start, show_result
 
 KEY_1 = b'aaaabbbbccccdddd'
 DATA_1 = b'abcdefgh'

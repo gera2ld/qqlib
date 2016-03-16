@@ -28,6 +28,6 @@ qq.sayHi()
 测试
 ---
 ``` sh
-$ python test
-$ python3 test
+$ python -m test
+$ python3 -m test
 ```
