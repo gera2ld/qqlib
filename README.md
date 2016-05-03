@@ -16,6 +16,12 @@ import qqlib
 qq = qqlib.QQ(12345678, 'password')
 qq.login()
 qq.sayHi()
+
+# QZone
+from qqlib import qzone
+qq = qzone.QZone(12345678, 'password')
+qq.login()
+qq.feed('发一条说说')
 ```
 
 测试

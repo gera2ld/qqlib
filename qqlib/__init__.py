@@ -14,11 +14,6 @@ __all__ = ['QQ', 'LogInError']
 class LogInError(Exception): pass
 
 class QQ:
-    '''
-    >>> qq = QQ(12345678, 'password')
-    >>> qq.login()
-    >>> qq.sayHi()
-    '''
     appid = 549000912
     action = '4-22-1450611437613'
     urlSuccess = 'http://qzs.qq.com/qzone/v5/loginsucc.html?para=izone'
