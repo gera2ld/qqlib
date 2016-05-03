@@ -3,8 +3,8 @@
 from . import QQ
 
 class QZone(QQ):
-    urlSuccess = 'http://qzs.qq.com/qzone/v5/loginsucc.html?para=izone'
-    urlFeed = 'http://taotao.qzone.qq.com/cgi-bin/emotion_cgi_publish_v6'
+    url_success = 'http://qzs.qq.com/qzone/v5/loginsucc.html?para=izone'
+    url_feed = 'http://taotao.qzone.qq.com/cgi-bin/emotion_cgi_publish_v6'
 
     def g_tk(self):
         h = 5381
@@ -15,7 +15,7 @@ class QZone(QQ):
         return h & 0x7fffffff
 
     def feed(self, data):
-        self.fetch(self.urlFeed, params = {
+        self.fetch(self.url_feed, params = {
             'g_tk': self.g_tk(),
         }, data = {
             'syn_tweet_verson'    : 1,

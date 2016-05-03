@@ -16,13 +16,11 @@ class LogInError(Exception): pass
 class QQ:
     appid = 549000912
     action = '4-22-1450611437613'
-    urlSuccess = 'http://qzs.qq.com/qzone/v5/loginsucc.html?para=izone'
-    urlCheck = 'http://check.ptlogin2.qq.com/check'
-    # urlCheck = 'https://ssl.ptlogin2.qq.com/check'
-    urlImage = 'http://captcha.qq.com/getimage'
-    urlLogin = 'http://ptlogin2.qq.com/login'
-    # urlLogin = 'https://ssl.ptlogin2.qq.com/login'
-    urlXLogin = 'http://xui.ptlogin2.qq.com/cgi-bin/xlogin'
+    url_success = 'http://qzs.qq.com/qzone/v5/loginsucc.html?para=izone'
+    url_check = 'http://check.ptlogin2.qq.com/check'
+    url_image = 'http://captcha.qq.com/getimage'
+    url_login = 'http://ptlogin2.qq.com/login'
+    url_xlogin = 'http://xui.ptlogin2.qq.com/cgi-bin/xlogin'
 
     def __init__(self, user, pwd):
         self.user = user
@@ -43,12 +41,12 @@ class QQ:
         '''
         Get a log-in signature in cookies.
         '''
-        self.fetch(self.urlXLogin, params = {
+        self.fetch(self.url_xlogin, params = {
             'proxy_url': 'http://qzs.qq.com/qzone/v6/portal/proxy.html',
             'daid': 5,
             'no_verifyimg': 1,
             'appid': self.appid,
-            's_url': self.urlSuccess,
+            's_url': self.url_success,
         })
         # print('login_sig:', self.session.cookies['pt_login_sig'])
 
@@ -57,13 +55,13 @@ class QQ:
         Check for verify code and log in.
         '''
         login_sig = self.session.cookies['pt_login_sig']
-        g = self.fetch(self.urlCheck, params = {
+        g = self.fetch(self.url_check, params = {
             'pt_tea': 1,
             'uin': self.user,
             'appid': self.appid,
             'js_ver': 10143,
             'js_type': 1,
-            'u1': self.urlSuccess,
+            'u1': self.url_success,
             'login_sig': login_sig,
         }).text
         v = re.findall('\'(.*?)\'', g)
@@ -71,17 +69,17 @@ class QQ:
         uin = v[2]
         ptvfsession = v[3]
         if v[0] == '1': # verify code needed
-            vcode = self.getVerifyCode(vcode)
+            vcode = self.get_verify_code(vcode)
         # `ptvfsession` may change
         ptvfsession = self.session.cookies.get('ptvfsession', ptvfsession)
-        g = self.fetch(self.urlLogin, params = {
+        g = self.fetch(self.url_login, params = {
             'u': self.user,
             'verifycode': vcode,
             'pt_vcode_v1': 0,
             'pt_verifysession_v1': ptvfsession,
             'p': self.pwdencode(vcode, uin, self.pwd),
             'pt_randsalt': 0,
-            'u1': self.urlSuccess,
+            'u1': self.url_success,
             'ptredirect': 0,
             'h': 1,
             't': 1,
@@ -105,7 +103,7 @@ class QQ:
         # Python 3: bytes.fromhex
         return bytes(bytearray.fromhex(s))
 
-    pubKey=rsa.PublicKey(int(
+    pubKey = rsa.PublicKey(int(
         'F20CE00BAE5361F8FA3AE9CEFA495362'
         'FF7DA1BA628F64A347F0A8C012BF0B25'
         '4A30CD92ABFFE7A6EE0DC424CB6166F8'
@@ -140,11 +138,11 @@ class QQ:
         ).decode().replace('/', '-').replace('+', '*').replace('=', '_')
         return saltPwd
 
-    def getVerifyCode(self, vcode):
+    def get_verify_code(self, vcode):
         '''
         Get the verify code image and ask use for a verification.
         '''
-        r = self.fetch(self.urlImage, params = {
+        r = self.fetch(self.url_image, params = {
             'r': 0,
             'appid': self.appid,
             'uin': self.user,
@@ -158,5 +156,5 @@ class QQ:
         os.remove(tmp[1])
         return vcode
 
-    def sayHi(self):
+    def say_hi(self):
         print('Hi, %s!' % (self.nick or self.user))

@@ -15,7 +15,7 @@ $ pip install git+https://github.com/gera2ld/qqlib.git
 import qqlib
 qq = qqlib.QQ(12345678, 'password')
 qq.login()
-qq.sayHi()
+qq.say_hi()
 
 # QZone
 from qqlib import qzone
