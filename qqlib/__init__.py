@@ -74,13 +74,16 @@ class QQ:
         v = re.findall('\'(.*?)\'', g)
         vcode = v[1]
         uin = v[2]
+        ptvfsession = v[3]
         if v[0] == '1': # verify code needed
             vcode = self.getVerifyCode(vcode)
+        # `ptvfsession` may change
+        ptvfsession = self.session.cookies.get('ptvfsession', ptvfsession)
         g = self.fetch(self.urlLogin, params = {
             'u': self.user,
             'verifycode': vcode,
             'pt_vcode_v1': 0,
-            'pt_verifysession_v1': self.session.cookies['ptvfsession'],
+            'pt_verifysession_v1': ptvfsession,
             'p': self.pwdencode(vcode, uin, self.pwd),
             'pt_randsalt': 0,
             'u1': self.urlSuccess,
