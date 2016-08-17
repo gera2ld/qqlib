@@ -18,7 +18,6 @@ $ python -m qqlib
 
 更高级的用法如下：
 ``` python
-import os
 import qqlib
 qq = qqlib.QQ(12345678, 'password')
 try:
@@ -27,8 +26,9 @@ except qqlib.NeedVerifyCode as e:
     # 需要验证码
     verifier = e.verifier
     open('verify.jpg', 'wb').write(verifier.image)
+    print('验证码已保存到verify.jpg')
     # 输入验证码
-    vcode = input('Input verify code:')
+    vcode = input('请输入验证码：')
     try:
         # 验证
         kw = verifier.verify(vcode)

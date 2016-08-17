@@ -16,11 +16,11 @@ while True:
         fd, path = tempfile.mkstemp(suffix = '.jpg')
         os.write(fd, verifier.image)
         os.close(fd)
-        print('Verify code image has been written to:', path)
-        vcode = input('Verify code: ')
+        print('验证码已保存到：', path)
+        vcode = input('请输入验证码：')
         os.remove(path)
         try:
-            kw = verifier.verify(vcode)
+            verifier.verify(vcode)
         except VerifyCodeError:
             print('验证码错误！')
             raise sys.exc_info()[1]

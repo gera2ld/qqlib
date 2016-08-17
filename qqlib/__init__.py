@@ -78,9 +78,6 @@ class QQ:
         self.nick = None
         self.verifier = None
         self.session = requests.Session()
-        self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
-        })
         self.xlogin()
 
     def fetch(self, url, data=None, **kw):
@@ -103,7 +100,6 @@ class QQ:
             'appid': self.appid,
             's_url': self.url_success,
         })
-        # print('login_sig:', self.session.cookies['pt_login_sig'])
 
     url_check = 'http://check.ptlogin2.qq.com/check'
     url_login = 'http://ptlogin2.qq.com/login'
