@@ -11,6 +11,12 @@ $ pip install git+https://github.com/gera2ld/qqlib.git
 
 使用方法
 ---
+快速尝试一下可以执行如下命令：
+``` sh
+$ python -m qqlib
+```
+
+更高级的用法如下：
 ``` python
 import qqlib
 qq = qqlib.QQ(12345678, 'password')
@@ -27,6 +33,6 @@ qq.feed('发一条说说')
 测试
 ---
 ``` sh
-$ python -m test
-$ python3 -m test
+$ python -m unittest
+$ python3 -m unittest
 ```
