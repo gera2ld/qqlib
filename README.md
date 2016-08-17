@@ -18,15 +18,32 @@ $ python -m qqlib
 
 更高级的用法如下：
 ``` python
+import os
 import qqlib
 qq = qqlib.QQ(12345678, 'password')
-qq.login()
-qq.say_hi()
+try:
+    qq.login()
+except qqlib.NeedVerifyCode as e:
+    # 需要验证码
+    verifier = e.verifier
+    open('verify.jpg', 'wb').write(verifier.image)
+    # 输入验证码
+    vcode = input('Input verify code:')
+    try:
+        # 验证
+        kw = verifier.verify(vcode)
+    except qqlib.VerifyCodeError as e:
+        print('验证码错误！')
+        raise e
+    else:
+        # 继续登录
+        qq.login()
+print('Hi, %s' % qq.nick)
 
 # QZone
 from qqlib import qzone
 qq = qzone.QZone(12345678, 'password')
-qq.login()
+# 先完成登录...
 qq.feed('发一条说说')
 ```
 

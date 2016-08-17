@@ -6,27 +6,81 @@ QQ Login module
 Licensed to MIT
 '''
 
-import os, hashlib, re, tempfile, binascii, base64
+import hashlib, re, binascii, base64
 import rsa, requests
 from . import tea
 __all__ = ['QQ', 'LogInError']
 
 class LogInError(Exception): pass
+class VerifyCodeError(LogInError): pass
+
+class NeedVerifyCode(Exception):
+    def __init__(self, verifier):
+        self.verifier = verifier
+
+class Verifier:
+    url_newverifywrap = 'http://captcha.qq.com/cap_union_show'
+    url_newverifycode = 'http://captcha.qq.com/getimgbysig'
+    url_newverify = 'http://captcha.qq.com/cap_union_verify_new'
+
+    def __init__(self, parent):
+        self.parent = parent
+
+    def get_verify_image(self):
+        parent = self.parent
+        g = parent.fetch(self.url_newverifywrap, params = {
+            'clientype': 2,
+            'uin': parent.user,
+            'aid': parent.appid,
+            'cap_cd': self.cap_cd,
+            'pt_style': 40,
+        }).text
+        m = re.search(r'var g_vsig = "(.*?)"', g)
+        self.sig = m.group(1)
+        r = parent.fetch(self.url_newverifycode, params = {
+            'clientype': 2,
+            'sig': self.sig,
+        })
+        self.image = r.content
+
+    def verify(self, vcode):
+        parent = self.parent
+        r = parent.fetch(self.url_newverify, params = {
+            'clientype': 2,
+            'uin': parent.user,
+            'aid': parent.appid,
+            'cap_cd': self.cap_cd,
+            'pt_style': 40,
+            'capclass': 0,
+            'sig': self.sig,
+            'ans': vcode,
+        }, headers = {
+            'Referer': 'http://captcha.qq.com/cap_union_show?clientype=2',
+        }, cookies = {
+            'TDC_token': '18526012',
+        })
+        r.encoding = 'utf-8'
+        g = r.json()
+        if g['errorCode'] != '0':
+            raise VerifyCodeError(g['errMessage'])
+        self.vcode = g['randstr']
+        self.ptvfsession = g['ticket']
 
 class QQ:
     appid = 549000912
     action = '4-22-1450611437613'
     url_success = 'http://qzs.qq.com/qzone/v5/loginsucc.html?para=izone'
-    url_check = 'http://check.ptlogin2.qq.com/check'
-    url_image = 'http://captcha.qq.com/getimage'
-    url_login = 'http://ptlogin2.qq.com/login'
-    url_xlogin = 'http://xui.ptlogin2.qq.com/cgi-bin/xlogin'
+    js_ver = 10171
 
     def __init__(self, user, pwd):
         self.user = user
         self.pwd = pwd
         self.nick = None
+        self.verifier = None
         self.session = requests.Session()
+        self.session.headers.update({
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
+        })
         self.xlogin()
 
     def fetch(self, url, data=None, **kw):
@@ -37,6 +91,7 @@ class QQ:
             func = self.session.post
         return func(url, **kw)
 
+    url_xlogin = 'http://xui.ptlogin2.qq.com/cgi-bin/xlogin'
     def xlogin(self):
         '''
         Get a log-in signature in cookies.
@@ -50,34 +105,39 @@ class QQ:
         })
         # print('login_sig:', self.session.cookies['pt_login_sig'])
 
-    def login(self):
-        '''
-        Check for verify code and log in.
-        '''
+    url_check = 'http://check.ptlogin2.qq.com/check'
+    url_login = 'http://ptlogin2.qq.com/login'
+    def login(self, force=False):
         login_sig = self.session.cookies['pt_login_sig']
-        g = self.fetch(self.url_check, params = {
-            'pt_tea': 1,
-            'uin': self.user,
-            'appid': self.appid,
-            'js_ver': 10143,
-            'js_type': 1,
-            'u1': self.url_success,
-            'login_sig': login_sig,
-        }).text
-        v = re.findall('\'(.*?)\'', g)
-        vcode = v[1]
-        uin = v[2]
-        ptvfsession = v[3]
-        if v[0] == '1': # verify code needed
-            vcode = self.get_verify_code(vcode)
-        # `ptvfsession` may change
-        ptvfsession = self.session.cookies.get('ptvfsession', ptvfsession)
+        if force:
+            self.verifier = None
+        if self.verifier is None:
+            verifier = self.verifier = Verifier(self)
+            g = self.fetch(self.url_check, params = {
+                'pt_tea': 2,
+                'uin': self.user,
+                'appid': self.appid,
+                'js_ver': self.js_ver,
+                'js_type': 1,
+                'u1': self.url_success,
+                'login_sig': login_sig,
+            }).text
+            v = re.findall('\'(.*?)\'', g)
+            verifier.pt_vcode_v1, verifier.cap_cd, verifier.uin, verifier.ptvfsession = v[:4]
+            if verifier.pt_vcode_v1 == '1':
+                verifier.get_verify_image()
+                raise NeedVerifyCode(verifier)
+            else:
+                verifier.vcode = verifier.cap_cd
+        else:
+            verifier = self.verifier
+        ptvfsession = verifier.ptvfsession or self.session.cookies.get('ptvfsession', '')
         g = self.fetch(self.url_login, params = {
             'u': self.user,
-            'verifycode': vcode,
-            'pt_vcode_v1': 0,
+            'verifycode': verifier.vcode,
+            'pt_vcode_v1': verifier.pt_vcode_v1,
             'pt_verifysession_v1': ptvfsession,
-            'p': self.pwdencode(vcode, uin, self.pwd),
+            'p': self.pwdencode(verifier.vcode, verifier.uin, self.pwd),
             'pt_randsalt': 0,
             'u1': self.url_success,
             'ptredirect': 0,
@@ -87,17 +147,20 @@ class QQ:
             'from_ui': 1,
             'ptlang': 2052,
             'action': self.action,
-            'js_ver': 10143,
+            'js_ver': self.js_ver,
             'js_type': 1,
             'aid': self.appid,
             'daid': 5,
             'login_sig': login_sig,
         }).text
         r = re.findall('\'(.*?)\'', g)
+        if r[0] == '4':
+            raise VerifyCodeError(r[4])
         if r[0] != '0':
             raise LogInError(r[4])
         self.nick = r[5]
         self.fetch(r[2])
+        self.verifier = None
 
     def fromhex(self, s):
         # Python 3: bytes.fromhex
@@ -137,24 +200,3 @@ class QQ:
             tea.encrypt(self.fromhex(pwd1), self.fromhex(s2))
         ).decode().replace('/', '-').replace('+', '*').replace('=', '_')
         return saltPwd
-
-    def get_verify_code(self, vcode):
-        '''
-        Get the verify code image and ask use for a verification.
-        '''
-        r = self.fetch(self.url_image, params = {
-            'r': 0,
-            'appid': self.appid,
-            'uin': self.user,
-            'vc_type': vcode,
-        })
-        tmp = tempfile.mkstemp(suffix = '.jpg')
-        os.write(tmp[0], r.content)
-        os.close(tmp[0])
-        os.startfile(tmp[1])
-        vcode = input('Verify code: ')
-        os.remove(tmp[1])
-        return vcode
-
-    def say_hi(self):
-        print('Hi, %s!' % (self.nick or self.user))
