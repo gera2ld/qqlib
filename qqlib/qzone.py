@@ -36,3 +36,22 @@ class QZone(QQ):
             'code_version'        : 1,
             'format'              : 'fs'
         })
+
+class MQZone(QZone):
+    url_success = 'https://h5.qzone.qq.com/mqzone/index'
+    url_feed = 'https://mobile.qzone.qq.com/mood/publish_mood'
+
+    def feed(self, data):
+        self.fetch(self.url_feed, params = {
+            'g_tk': self.g_tk(),
+        }, data = {
+            'opr_type': 'publish_shuoshuo',
+            'res_uin': self.user,
+            'content': data,
+            'richval': '',
+            'lat': 0,
+            'lon': 0,
+            'lbsid': '',
+            'issyncweibo': 0,
+            'format': 'json',
+        })
