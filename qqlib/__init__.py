@@ -41,7 +41,7 @@ class Verifier:
             'noBorder': 'noborder',
             'showtype': 'embed',
             'rnd': 96996,
-            'rand': ''.join([random.choice('0123456789') for i in range(9)],
+            'rand': ''.join([random.choice('0123456789') for i in range(9)]),
         }).text
         m = re.search(r'"vsig":"(.*?)"', g)
         self.sig = m.group(1)
