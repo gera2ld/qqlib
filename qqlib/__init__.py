@@ -29,7 +29,12 @@ class Verifier:
 
     def get_verify_image(self):
         parent = self.parent
-        g = parent.fetch(self.url_newverifywrap, params = {'apptype': 2}).json()
+        g = parent.fetch(self.url_newverifywrap, params = {
+            'apptype': 2,
+            'uin': parent.user,
+            'aid': parent.appid,
+            'cap_cd': self.cap_cd,
+        }).json()
         self.sig = g['vsig']
         r = parent.fetch(self.url_newverifycode, params = {
             'clientype': 2,
