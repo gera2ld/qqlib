@@ -40,7 +40,7 @@ def login(qq):
         open('verify.jpg', 'wb').write(verifier.image)
         print('验证码已保存到verify.jpg')
         # 输入验证码
-        vcode = raw_input('请输入验证码：')
+        vcode = input('请输入验证码：')
         try:
             # 验证
             kw = verifier.verify(vcode)
