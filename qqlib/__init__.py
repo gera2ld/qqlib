@@ -9,6 +9,7 @@ Licensed to MIT
 import hashlib, re, binascii, base64
 import rsa, requests
 from . import tea
+import random
 __all__ = ['QQ', 'LogInError']
 
 class LogInError(Exception): pass
@@ -19,7 +20,7 @@ class NeedVerifyCode(Exception):
         self.verifier = verifier
 
 class Verifier:
-    url_newverifywrap = 'http://captcha.qq.com/cap_union_show'
+    url_newverifywrap = 'http://captcha.qq.com/cap_union_getsig_new'
     url_newverifycode = 'http://captcha.qq.com/getimgbysig'
     url_newverify = 'http://captcha.qq.com/cap_union_verify_new'
 
@@ -29,14 +30,12 @@ class Verifier:
     def get_verify_image(self):
         parent = self.parent
         g = parent.fetch(self.url_newverifywrap, params = {
-            'clientype': 2,
+            'apptype': 2,
             'uin': parent.user,
             'aid': parent.appid,
             'cap_cd': self.cap_cd,
-            'pt_style': 40,
-        }).text
-        m = re.search(r'var g_vsig = "(.*?)"', g)
-        self.sig = m.group(1)
+        }).json()
+        self.sig = g['vsig']
         r = parent.fetch(self.url_newverifycode, params = {
             'clientype': 2,
             'sig': self.sig,
