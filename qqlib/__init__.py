@@ -29,22 +29,8 @@ class Verifier:
 
     def get_verify_image(self):
         parent = self.parent
-        g = parent.fetch(self.url_newverifywrap, params = {
-            'clientype': 2,
-            'uin': parent.user,
-            'aid': parent.appid,
-            'cap_cd': self.cap_cd,
-            'captype': '',
-            'protocol': 'http',
-            'disturblevel': '',
-            'apptype': 2,
-            'noBorder': 'noborder',
-            'showtype': 'embed',
-            'rnd': 96996,
-            'rand': ''.join([random.choice('0123456789') for i in range(9)]),
-        }).text
-        m = re.search(r'"vsig":"(.*?)"', g)
-        self.sig = m.group(1)
+        g = parent.fetch(self.url_newverifywrap, params = {'apptype': 2}).json()
+        self.sig = g['vsig']
         r = parent.fetch(self.url_newverifycode, params = {
             'clientype': 2,
             'sig': self.sig,
