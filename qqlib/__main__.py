@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# coding=utf-8
 import getpass, sys, tempfile, os
 from . import QQ, VerifyCodeError, NeedVerifyCode
 
@@ -13,7 +11,7 @@ while True:
     except NeedVerifyCode:
         e = sys.exc_info()[1]
         verifier = e.verifier
-        fd, path = tempfile.mkstemp(suffix = '.jpg')
+        fd, path = tempfile.mkstemp(suffix='.jpg')
         os.write(fd, verifier.image)
         os.close(fd)
         print('验证码已保存到：', path)

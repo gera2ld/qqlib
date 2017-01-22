@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# coding=utf-8
-
 '''
 QQ Login module
 Licensed to MIT
@@ -9,7 +6,7 @@ Licensed to MIT
 import hashlib, re, binascii, base64
 import rsa, requests
 from . import tea
-import random
+
 __all__ = ['QQ', 'LogInError']
 
 class LogInError(Exception): pass
@@ -17,6 +14,7 @@ class VerifyCodeError(LogInError): pass
 
 class NeedVerifyCode(Exception):
     def __init__(self, verifier):
+        Exception.__init__(self)
         self.verifier = verifier
 
 class Verifier:
@@ -29,14 +27,14 @@ class Verifier:
 
     def get_verify_image(self):
         parent = self.parent
-        g = parent.fetch(self.url_newverifywrap, params = {
+        g = parent.fetch(self.url_newverifywrap, params={
             'apptype': 2,
             'uin': parent.user,
             'aid': parent.appid,
             'cap_cd': self.cap_cd,
         }).json()
         self.sig = g['vsig']
-        r = parent.fetch(self.url_newverifycode, params = {
+        r = parent.fetch(self.url_newverifycode, params={
             'clientype': 2,
             'sig': self.sig,
         })
@@ -44,7 +42,7 @@ class Verifier:
 
     def verify(self, vcode):
         parent = self.parent
-        r = parent.fetch(self.url_newverify, params = {
+        r = parent.fetch(self.url_newverify, params={
             'clientype': 2,
             'uin': parent.user,
             'aid': parent.appid,
@@ -53,12 +51,12 @@ class Verifier:
             'capclass': 0,
             'sig': self.sig,
             'ans': vcode,
-        }, headers = {
+        }, headers={
             'Referer': 'http://captcha.qq.com/cap_union_show?clientype=2',
-        }, cookies = {
+        }, cookies={
             'TDC_token': '18526012',
         })
-        r.encoding = 'utf-8'
+        r.encoding='utf-8'
         g = r.json()
         if g['errorCode'] != '0':
             raise VerifyCodeError(g['errMessage'])
@@ -92,7 +90,7 @@ class QQ:
         '''
         Get a log-in signature in cookies.
         '''
-        self.fetch(self.url_xlogin, params = {
+        self.fetch(self.url_xlogin, params={
             'proxy_url': 'http://qzs.qq.com/qzone/v6/portal/proxy.html',
             'daid': 5,
             'no_verifyimg': 1,
@@ -108,7 +106,7 @@ class QQ:
             self.verifier = None
         if self.verifier is None:
             verifier = self.verifier = Verifier(self)
-            g = self.fetch(self.url_check, params = {
+            g = self.fetch(self.url_check, params={
                 'pt_tea': 2,
                 'uin': self.user,
                 'appid': self.appid,
@@ -127,7 +125,7 @@ class QQ:
         else:
             verifier = self.verifier
         ptvfsession = verifier.ptvfsession or self.session.cookies.get('ptvfsession', '')
-        g = self.fetch(self.url_login, params = {
+        g = self.fetch(self.url_login, params={
             'u': self.user,
             'verifycode': verifier.vcode,
             'pt_vcode_v1': verifier.pt_vcode_v1,

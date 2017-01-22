@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# coding=utf-8
 import unittest
 from binascii import a2b_hex, b2a_hex
 from qqlib import tea
