@@ -1,11 +1,14 @@
-QQLib for Python
+qqlib
 ===
+[![PyPI](https://img.shields.io/pypi/v/qqlib.svg)]()
 
 Python版QQ登录库，兼容Python2.x和Python3.x。
 
 安装
 ---
 ``` sh
+$ pip install qqlib
+# or
 $ pip install git+https://github.com/gera2ld/qqlib.git
 ```
 
@@ -64,6 +67,9 @@ qq.feed('发一条说说')
 测试
 ---
 ``` sh
-$ python -m unittest
+# Python 2
+$ python -m unittest discover
+
+# Python 3
 $ python3 -m unittest
 ```
