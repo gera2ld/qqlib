@@ -31,28 +31,28 @@ login(qq)
 print('Hi, %s' % qq.nick)
 ```
 
-登录时有可能出现需要验证码的情况，这时可以捕获`qqlib.NeedVerifyCode`错误并从中获取验证码图片（`exc.verifier.image`）进行处理，验证（`exc.verifier.verify(code)`）之后再继续登录。下面是支持输入验证码的`login`方法：
+登录时有可能出现需要验证码的情况，这时可以捕获`qqlib.NeedVerifyCode`错误并从中获取验证码图片（`exc.verifier.fetch_image()`）进行处理，验证（`exc.verifier.verify(code)`）之后再继续登录。下面是支持输入验证码的`login`方法：
 ``` python
 def login(qq):
-    # 捕获验证码
-    try:
-        qq.login()
-    except qqlib.NeedVerifyCode as e:
-        # 需要验证码
-        verifier = e.verifier
-        open('verify.jpg', 'wb').write(verifier.image)
-        print('验证码已保存到verify.jpg')
-        # 输入验证码
-        vcode = input('请输入验证码：')
+    exc = None
+    # 自动重试登录
+    while True:
         try:
-            # 验证
-            kw = verifier.verify(vcode)
-        except qqlib.VerifyCodeError as e:
-            print('验证码错误！')
-            raise e
-        else:
-            # 继续登录
-            qq.login()
+            if exc is None:
+                qq.login()
+                break
+            else:
+                if exc.message:
+                    print('Error:', exc.message)
+                verifier = exc.verifier
+                open('verify.jpg', 'wb').write(verifier.fetch_image())
+                print('验证码已保存到verify.jpg')
+                # 输入验证码
+                vcode = input('请输入验证码：')
+                verifier.verify(vcode)
+                exc = None
+        except qqlib.NeedVerifyCode as e:
+            exc = e
 ```
 
 QZone：
