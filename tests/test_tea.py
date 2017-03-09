@@ -18,10 +18,11 @@ class TestTEA(unittest.TestCase):
         c = tea.decipher(a2b_hex(ENC_1), KEY_1)
         self.assertEqual(c, DATA_1)
 
-    def test_encrypt(self):
-        e = b2a_hex(tea.encrypt(DATA_2, KEY_2))
-        self.assertEqual(e, ENC_2)
-
     def test_decrypt(self):
         c = tea.decrypt(a2b_hex(ENC_2), KEY_2)
         self.assertEqual(c, DATA_2)
+
+    def test_encrypt(self):
+        e = tea.encrypt(DATA_2, KEY_2)
+        src = tea.decrypt(e, KEY_2)
+        self.assertEqual(src, DATA_2)
