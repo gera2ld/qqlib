@@ -4,7 +4,7 @@ Licensed to MIT
 '''
 
 import struct, ctypes
-from random import randint
+import os
 
 __all__ = ['encrypt', 'decrypt']
 
@@ -61,7 +61,7 @@ def encrypt(v, k):
     filln = (6 - vl) % 8
     v_arr = (
         bytes(bytearray([filln | 0xf8])),
-        b'\xad' * (filln + 2),  # random char * (filln + 2)
+        os.urandom(filln + 2),  # random char * (filln + 2)
         v,
         b'\0' * 7,
     )
