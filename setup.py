@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='qqlib',
-    version='1.1.0',
+    version='1.1.1',
     description='QQ library for Python.',
     long_description='QQ library for Python, based on web APIs.',
     url='https://github.com/gera2ld/qqlib',
