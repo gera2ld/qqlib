@@ -27,6 +27,7 @@ class Verifier:
     def __init__(self, parent):
         self.parent = parent
         self.sess = None
+        self.need_verify = False
 
     def check(self):
         parent = self.parent
@@ -112,8 +113,10 @@ class Verifier:
             self.throw(g['errMessage'])
         self.vcode = g['randstr']
         self.ptvfsession = g['ticket']
+        self.need_verify = False
 
     def throw(self, message=None):
+        self.need_verify = True
         raise NeedVerifyCode(self, message)
 
 class QQ:
@@ -191,6 +194,10 @@ class QQ:
         self.nick = r[5]
         self.fetch(r[2])
         self.verifier = None
+
+    @property
+    def need_verify(self):
+        return self.verifier and self.verifier.need_verify
 
     def fromhex(self, s):
         # Python 3: bytes.fromhex
